@@ -1,0 +1,24 @@
+{
+  "name": "ophelia",
+  "version": "1.0.0",
+  "description": "*From the Ancient Greek ὠφέλεια (ophéleia) — \"help, advantage.\"*",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mapaseka-Moloi/Ophelia.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Mapaseka-Moloi/Ophelia/issues"
+  },
+  "homepage": "https://github.com/Mapaseka-Moloi/Ophelia#readme",
+  "dependencies": {
+    "@tensorflow-models/speech-commands": "^0.5.4",
+    "@tensorflow/tfjs": "^4.22.0"
+  }
+}
