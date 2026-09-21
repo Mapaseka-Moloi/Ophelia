@@ -754,3 +754,33 @@ input[type="checkbox"] {
       font-weight: 700;
       margin-top: 12px;
     }
+
+  @media (min-width: 900px) {
+      .routes-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .opportunities-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .pricing-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .metrics-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    @media (max-width: 650px) {
+      h1 {
+        font-size: 38px;
+      }
+
+      .subject-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>   
