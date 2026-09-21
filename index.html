@@ -1202,3 +1202,34 @@ input[type="checkbox"] {
         </label>
 
       </div>
+<div class="actions">
+        <button class="button button-primary" onclick="generatePath()">
+          Generate my path
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Dashboard Screen -->
+  <section id="screen-dashboard" class="screen hidden">
+    <div class="card">
+      <div class="topbar">
+        <div>
+          <span class="badge">Your Pathway</span>
+          <span class="badge plan-badge" id="plan-badge">Free plan</span>
+        </div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button
+            class="button button-secondary"
+            id="offline-toggle"
+            onclick="toggleOfflineMode()"
+          >
+            Offline mode: Off
+          </button>
+
+          <button class="link-button" onclick="resetDemo()">
+            Reset
+          </button>
+        </div>
+      </div>
