@@ -1356,3 +1356,33 @@ input[type="checkbox"] {
           Reset What If changes
         </button>
       </div>
+      <h3>Impact summary</h3>
+
+      <div id="impact-summary" class="summary-item"></div>
+
+      <h3>AI Career Coach</h3>
+
+      <div class="summary-item">
+        <p>
+          Ask a quick question and get a personalized recommendation.
+        </p>
+
+        <input
+          type="text"
+          id="ai-question"
+          class="ai-input"
+          placeholder="Example: How do I prepare for NSFAS?"
+        />
+
+        <div class="actions">
+          <button class="button button-primary" onclick="askAiCoach()">
+            Ask GirlMentor
+          </button>
+        </div>
+
+        <div id="ai-answer" class="ai-answer hidden"></div>
+
+        <div class="small-note">
+          Prototype uses a simulated FastAPI + Gemini 2.5 Flash response. Production will use secure backend API calls, schema validation and offline fallback.
+        </div>
+      </div>
