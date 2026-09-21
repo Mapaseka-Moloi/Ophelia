@@ -961,3 +961,23 @@ input[type="checkbox"] {
             <option>Job Seeker</option>
           </select>
         </label>
+         <label class="field">
+          Grade / Year / Level
+          <input type="text" id="level" placeholder="Example: Grade 10 or Final year" />
+        </label>
+
+        <label class="field">
+          Qualification / Degree
+          <input type="text" id="qualification" placeholder="Example: BSc Mathematics" />
+        </label>
+
+        <label class="field">
+          Country
+          <input
+            type="text"
+            id="country"
+            placeholder="Search country"
+            oninput="handleCountrySearch()"
+            autocomplete="off"
+          />
+        </label>
