@@ -1,24 +1,17 @@
 {
-  "name": "ophelia",
+  "name": "girlmentor",
   "version": "1.0.0",
-  "description": "*From the Ancient Greek ὠφέλεια (ophéleia) — \"help, advantage.\"*",
-  "main": "index.js",
+  "description": "GirlMentor: an AI life-path navigator for girls and young women in South Africa.",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "npx serve .",
+    "test": "node --check check.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Mapaseka-Moloi/Ophelia.git"
-  },
-  "keywords": [],
+  "keywords": ["education", "career-guidance", "south-africa", "sdg4", "sdg5"],
   "author": "",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/Mapaseka-Moloi/Ophelia/issues"
   },
   "homepage": "https://github.com/Mapaseka-Moloi/Ophelia#readme",
-  "dependencies": {
-    "@tensorflow-models/speech-commands": "^0.5.4",
-    "@tensorflow/tfjs": "^4.22.0"
-  }
+  "devDependencies": {}
 }
