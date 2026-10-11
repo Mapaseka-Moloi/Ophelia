@@ -1,0 +1,5 @@
+"description": "GirlMentor: an AI life-path navigator for girls and young women in South Africa.",
+"scripts": {
+  "start": "npx serve ."
+},
+"keywords": ["education", "career-guidance", "south-africa", "sdg4", "sdg5"]
