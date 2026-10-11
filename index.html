@@ -1610,7 +1610,199 @@ input[type="checkbox"] {
   </section>
 
   <script>
-  // GirlMentor app logic — injected in following commits.
+  // ---- GirlMentor state ----
+  const AppState = {
+    profile: null,
+    plan: 'free',
+    billing: 'monthly',
+    offline: false,
+    whatIf: { dropMaths: false, dropScience: false, noUniversity: false },
+    journey: null
+  };
+
+  const COUNTRIES = ['South Africa', 'Botswana', 'Namibia', 'Zimbabwe', 'Zambia', 'Lesotho', 'Eswatini', 'Mozambique', 'Kenya', 'Ghana', 'Nigeria'];
+  const SA_CITIES = ['Johannesburg', 'Cape Town', 'Durban', 'Pretoria', 'Gqeberha', 'Bloemfontein', 'Polokwane', 'Nelspruit', 'Kimberley', 'Rustenburg', 'Thohoyandou', 'Soweto', 'Khayelitsha', 'Umlazi', 'Seshego', 'Mthatha', 'Upington', 'George', 'Potchefstroom', 'Vanderbijlpark'];
+
+  function showScreen(name) {
+    ['landing', 'profile', 'dashboard', 'sponsor', 'architecture'].forEach(function (s) {
+      const el = document.getElementById('screen-' + s);
+      if (el) el.classList.toggle('hidden', s !== name);
+    });
+    window.scrollTo(0, 0);
+  }
+
+  function scrollToSection(id) {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  // ---- Plans / billing ----
+  function setBilling(mode) {
+    AppState.billing = mode;
+    const m = document.getElementById('billing-monthly');
+    const a = document.getElementById('billing-annual');
+    if (m) m.classList.toggle('active', mode === 'monthly');
+    if (a) a.classList.toggle('active', mode === 'annual');
+    const price = document.getElementById('premium-price');
+    if (price) price.textContent = mode === 'annual' ? 'R79/month, billed annually' : 'R99/month';
+  }
+
+  function updatePlanBadge() {
+    const badge = document.getElementById('plan-badge');
+    if (badge) badge.textContent = AppState.plan === 'premium' ? 'Premium trial' : 'Free plan';
+  }
+
+  function chooseFreePlan() {
+    AppState.plan = 'free';
+    updatePlanBadge();
+    showScreen('profile');
+  }
+
+  function startPremiumTrial() {
+    AppState.plan = 'premium';
+    updatePlanBadge();
+    renderPremiumFeatures();
+    showScreen('profile');
+  }
+
+  // ---- Profile ----
+  function getSelectedValues(selector) {
+    return Array.from(document.querySelectorAll(selector))
+      .filter(function (el) { return el.checked; })
+      .map(function (el) { return el.value; });
+  }
+
+  function getSubjects() {
+    const rows = document.querySelectorAll('.subject-row');
+    return Array.from(rows).map(function (row) {
+      const box = row.querySelector('.subject-checkbox');
+      const mark = row.querySelector('.subject-mark');
+      return { name: box ? box.value : '', selected: box ? box.checked : false, mark: mark ? parseInt(mark.value, 10) : 0 };
+    }).filter(function (s) { return s.selected; });
+  }
+
+  function readProfileFromForm() {
+    return {
+      name: (document.getElementById('name').value || 'Learner').trim() || 'Learner',
+      stage: document.getElementById('stage').value,
+      level: document.getElementById('level').value || '',
+      qualification: document.getElementById('qualification').value || '',
+      country: document.getElementById('country').value || 'South Africa',
+      city: document.getElementById('city').value || '',
+      subjects: getSubjects(),
+      interests: getSelectedValues('.interest-checkbox'),
+      goal: document.getElementById('goal').value,
+      financialNeed: document.getElementById('financialNeed').checked
+    };
+  }
+
+  function fillProfileToForm(p) {
+    document.getElementById('name').value = p.name || '';
+    document.getElementById('stage').value = p.stage || 'High School';
+    document.getElementById('level').value = p.level || '';
+    document.getElementById('qualification').value = p.qualification || '';
+    document.getElementById('country').value = p.country || '';
+    document.getElementById('city').value = p.city || '';
+    document.getElementById('goal').value = p.goal || 'Cybersecurity';
+    document.getElementById('financialNeed').checked = !!p.financialNeed;
+    const subjectMap = {};
+    (p.subjects || []).forEach(function (s) { subjectMap[s.name] = s.mark; });
+    document.querySelectorAll('.subject-row').forEach(function (row) {
+      const box = row.querySelector('.subject-checkbox');
+      const mark = row.querySelector('.subject-mark');
+      const label = row.querySelector('.mark-label');
+      if (box && subjectMap.hasOwnProperty(box.value)) {
+        box.checked = true;
+        mark.value = subjectMap[box.value];
+        label.textContent = subjectMap[box.value] + '%';
+      } else if (box) {
+        box.checked = false;
+      }
+    });
+    const interests = new Set(p.interests || []);
+    document.querySelectorAll('.interest-checkbox').forEach(function (box) {
+      box.checked = interests.has(box.value);
+    });
+  }
+
+  function loadAmahle() {
+    const demo = {
+      name: 'Amahle', stage: 'High School', level: 'Grade 10', qualification: '',
+      country: 'South Africa', city: 'Umlazi',
+      subjects: [{ name: 'Mathematics', mark: 72 }, { name: 'Physical Sciences', mark: 68 }],
+      interests: ['Technology', 'Cybersecurity', 'Problem solving'],
+      goal: 'Cybersecurity', financialNeed: true
+    };
+    fillProfileToForm(demo);
+    generatePath();
+  }
+
+  function editProfile() { showScreen('profile'); }
+  function resetDemo() {
+    AppState.profile = null;
+    AppState.whatIf = { dropMaths: false, dropScience: false, noUniversity: false };
+    AppState.journey = null;
+    syncWhatIfButtons();
+    showScreen('landing');
+  }
+
+  function setJourneyStage(stage, level, goalOverride) {
+    if (!AppState.profile) {
+      AppState.profile = readProfileFromForm();
+    }
+    AppState.journey = { stage: stage, level: level };
+    AppState.profile.stage = stage;
+    AppState.profile.level = level;
+    if (goalOverride) AppState.profile.goal = goalOverride;
+    renderAll();
+    scrollToSection('pathway-section');
+  }
+
+  // ---- Location search ----
+  function handleCountrySearch() {
+    const q = document.getElementById('country').value.toLowerCase();
+    const box = document.getElementById('province-results');
+    const matches = COUNTRIES.filter(function (c) { return c.toLowerCase().includes(q); }).slice(0, 5);
+    box.innerHTML = '';
+    box.className = 'location-results';
+    matches.forEach(function (c) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'location-result'; b.textContent = c;
+      b.onclick = function () { document.getElementById('country').value = c; box.innerHTML = ''; };
+      box.appendChild(b);
+    });
+  }
+
+  function handleCitySearch() {
+    const q = document.getElementById('city').value.toLowerCase();
+    const box = document.getElementById('city-results');
+    const matches = SA_CITIES.filter(function (c) { return c.toLowerCase().includes(q); }).slice(0, 5);
+    box.innerHTML = '';
+    box.className = 'location-results';
+    matches.forEach(function (c) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'location-result'; b.textContent = c;
+      b.onclick = function () { document.getElementById('city').value = c; box.innerHTML = ''; };
+      box.appendChild(b);
+    });
+  }
+
+  // ---- Offline ----
+  function toggleOfflineMode() {
+    AppState.offline = !AppState.offline;
+    const btn = document.getElementById('offline-toggle');
+    if (btn) btn.textContent = 'Offline mode: ' + (AppState.offline ? 'On' : 'Off');
+    const banner = document.getElementById('network-banner');
+    if (banner) banner.classList.toggle('hidden', !AppState.offline);
+  }
+
+  // Mark sliders live update
+  document.addEventListener('input', function (e) {
+    if (e.target && e.target.classList && e.target.classList.contains('subject-mark')) {
+      const label = e.target.parentElement.querySelector('.mark-label');
+      if (label) label.textContent = e.target.value + '%';
+    }
+  });
   </script>
 </body>
 </html>
