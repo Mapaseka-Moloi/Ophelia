@@ -1,155 +1,110 @@
-# Ophelia — Offline-First AI Safety Companion
+# GirlMentor: AI Life-Path Navigator
 
-*From the Ancient Greek ὠφέλεια (ophéleia) — "help, advantage."*
+> Know your next move.
 
-> Predict → Prevent → Detect → Respond → Recover
-> An AI-powered safety platform that protects people before, during, and after
-> dangerous situations — with or without a signal.
+GirlMentor helps girls and young women in South Africa understand how the choices they make today shape the opportunities available to them tomorrow. It turns a learner's stage, subjects, marks and interests into a personalised pathway, and connects them to opportunities, funding guidance and human mentors.
 
----
+Built for the GirlCode hackathon. Aligned with **SDG 4 (Quality Education)** and **SDG 5 (Gender Equality)**.
 
-## 1. Description
-
-Most personal safety apps make a quiet assumption: that you'll always have
-signal when it matters most. But danger doesn't wait for bars on your
-phone. It happens in the dead zone on your walk home, the underground
-parking lot, the hiking trail, the rural road with no towers for
-kilometres.
-
-Ophelia is built for exactly that moment. She runs entirely on-device using
-edge AI, so she doesn't need a connection to notice that something is
-wrong. Using only the sensors already in your pocket — accelerometer,
-gyroscope, GPS, microphone — she detects the signs of danger locally: a
-sudden fall, a struggle, a deviation from your usual route, a scream. No
-server round-trip, no dependency on network availability, no delay.
-
-When she needs to get help out, she doesn't wait for a signal to appear —
-she queues the alert and fires it the instant any connection returns, or
-relays it via nearby devices over Bluetooth mesh until it finds a way out.
-
-Beyond individuals, Ophelia is built to scale as safety infrastructure —
-licensed into university systems, gig platforms, and lone-worker programs,
-protecting not just one person at a time, but entire communities and
-institutions at once.
-
-She isn't just named for help. She's built to give it, with or without a
-signal.
+*(This repository was originally started as "Ophelia", an offline-first AI safety companion. The project has since been reshaped into GirlMentor, an education platform.)*
 
 ---
 
-## 2. The Problem
+## 1. The Problem
 
-South Africa's gender-based violence crisis is not a story problem, it's a
-numbers problem:
+Many learners make high-impact decisions, such as subject choices, degree or TVET options and bursary applications, without clear guidance. Learners from under-resourced schools often have the least access to career counselling, mentors and information about funding like NSFAS and bursaries.
 
-| Metric | Figure | Source |
+## 2. The Solution
+
+GirlMentor is a web app that guides a learner from "where am I now?" to "what should I do next?":
+
+1. She builds a profile (stage, level, location, subjects and marks, interests).
+2. The app generates personalised pathways and routes based on that profile.
+3. She can explore "what if" scenarios to see how different choices change her options.
+4. She is matched with relevant opportunities and can get help from AI guidance and human mentors.
+
+## 3. Features
+
+**Profile builder**
+- Stage: High School, University, TVET College, Graduate, Self-taught, Job Seeker
+- Grade / year / level and qualification
+- Country and city / town search
+- Subject selection with a mark slider per subject (Mathematics, Physical Sciences, Life Sciences, Accounting, Business Studies, Economics, Information Technology, Computer Applications Technology)
+- Interests (for example Technology, Cybersecurity, Engineering, Business, Entrepreneurship)
+
+**Guidance and planning**
+- Personalised pathway and route recommendations
+- "What if" toggles to explore how different choices change the outcome
+- Opportunity matching, with a short reason shown for each match
+- AI guidance with an offline guidance fallback
+- Localised NSFAS, TVET and bursary guidance
+
+**People and impact**
+- "Ask a Sister" mentor profiles and matching
+- Sponsor / NPO dashboard with impact metrics for corporate CSI teams
+- Architecture screen explaining how the system fits together
+
+**Demo mode**
+- "Demo as Amahle" loads a ready-made learner persona so the full flow can be shown without filling in the form.
+
+## 4. Plans
+
+| Plan | Price | What's included |
 |---|---|---|
-| Women (18+) who have experienced physical violence in their lifetime | 7,310,389 (33.1%) | HSRC National GBV Study |
-| Women who have experienced sexual violence in their lifetime | 2,150,342 (9.9%) | HSRC National GBV Study |
-| Women reporting any lifetime GBV | 51% | HSRC National GBV Study |
-| Women killed per day | 15 | SAPS crime stats |
-| Rapes reported per day | 115 | SAPS crime stats |
-| Women who feel unsafe/very unsafe walking alone at night | 66.2% (~15.16M) | Stats SA, 2024/25 |
-| Annual cost of GBV to the SA economy | R28.4bn – R42.4bn (0.9–1.3% of GDP) | KPMG |
+| Free | R0 | Basic AI guidance, subject selection help, basic quiz generation, public opportunities, offline guidance fallback |
+| Premium | R99/month (annual option) | Custom study plans, AI business coaching, unlimited interview prep, priority matching with human mentors and tutors, advanced AI capabilities, localised NSFAS and bursary guidance. 7-day free trial |
+| Sponsor / NPO | Custom | Sponsor learners from underserved schools, fund "Ask a Sister" mentors, track NSFAS / TVET / bursary outcomes, corporate CSI impact dashboard, early talent pipeline visibility |
 
-Existing personal-safety products — including hardware solutions like the
-**Alerting Earpiece** (Mphahlele Alerts) — are reactive: they require the
-victim to be conscious and physically able to press a button, and they
-depend on a connected paired phone to send the alert. Hardware also carries
-manufacturing, supply chain, battery, and distribution constraints that cap
-how many people it can ever reach.
+## 5. Tech Stack
 
-## 3. The Solution
+- **Front end:** HTML, CSS and JavaScript in a single page (`index.html`), no build step
+- **Fonts:** Inter and Playfair Display (Google Fonts)
+- **AI / ML:** TensorFlow.js (`@tensorflow/tfjs`) and the speech-commands model (`@tensorflow-models/speech-commands`) are declared dependencies. **[Describe what they are used for in the app, or remove them from `package.json` if they are no longer used.]**
 
-Ophelia is **software, not a device** — an AI safety layer that runs on
-the smartphone people already own, and works whether or not that phone has
-signal.
-
-- **Proactive Edge AI**: on-device ML detects contextual risk (sudden stop,
-  fall, distress in voice) without requiring the user to act.
-- **Offline-first**: detection, analysis, and evidence capture all happen
-  locally. Nothing requires a live server connection to work.
-- **Store-and-forward + BLE mesh**: in a dead zone, an SOS is queued locally
-  and/or relayed via Bluetooth Low Energy to nearby devices until it reaches
-  a connection point — solving the "how does the alert escape a dead zone"
-  problem that reactive, phone-paired hardware doesn't answer.
-- **Safety states, not just a red button**: 🟢 Safe → 🟡 Attention →
-  🔴 High Risk, with an automatic escalation protocol rather than a single
-  binary trigger.
-
-### Why offline AI is even possible: edge AI, in one line
-
-A model is **trained once, ahead of time**, then compiled into a lightweight
-format (TensorFlow Lite / Core ML / ONNX Runtime Mobile) and **bundled
-inside the app**. At runtime, the phone's own CPU/NPU runs that model
-locally against whatever the phone's sensors are already producing — no
-network call happens during inference. This is proven, shipping technology
-(the same principle behind Face ID and Apple Watch fall detection), not a
-research bet. See `DOCUMENTATION.md` §4 for the full breakdown, including
-exactly which signals a phone-only MVP can and can't detect.
-
-## 4. Who It's For
-
-Not just individuals — Ophelia is designed to be licensed into the apps and
-systems people already use:
-
-- Individuals, students, tourists, commuters, hikers
-- Gig-economy platforms and delivery fleets (Uber, Bolt, DoorDash-style)
-- Universities and campus safety programs
-- Mining, construction, real estate — "lone worker" duty-of-care compliance
-- Municipalities (anonymized safety heat-map data)
-- Insurers (behavioural/incident data → fewer, better-quality claims)
-
-## 5. Business Model
-
-| Tier | Customer | Model |
-|---|---|---|
-| B2C Free | Individuals | SOS, trusted contacts, basic location sharing, offline safety map |
-| B2C Premium | Individuals | ~R49–R99/month — AI risk detection, route monitoring, evidence vault, family circles |
-| B2B SaaS | Corporates, mining, campuses | Per-active-user monthly fee (illustrative: R20–R40/user/month) |
-| B2G | Municipalities | Anonymized safety/heat-map data licensing |
-| B2B2C | Insurers, tourism boards, airlines | White-label / embedded safety layer |
-
-See `DOCUMENTATION.md` for the full TAM/SAM/SOM breakdown and worked
-enterprise-revenue examples.
-
-## 6. How This Compares to the Benchmark
-
-| | Alerting Earpiece (hardware) | Ophelia (software) |
-|---|---|---|
-| Trigger | Reactive — victim must press a button | Proactive — AI detects risk without user action |
-| Offline answer | Relies on paired phone's connection | Store-and-forward + BLE mesh |
-| Scale ceiling | Bound by manufacturing/distribution | Zero marginal cost per new user |
-| Time to market | Founded 2020, still pre-launch | Deployable now |
-| Revenue model | One-time hardware sale | Recurring B2C + B2B SaaS |
-
-## 7. Status & Roadmap
-
-**Phase 1 — phone-only (MVP):** motion, audio, and location signals only —
-no biometric sensing. This is what's feasible on hardware everyone already
-owns and what the current demo targets.
-
-- [ ] Working offline demo (local risk detection + store-and-forward)
-- [ ] BLE mesh relay proof-of-concept
-- [ ] Pilot with one institutional partner (university or fleet)
-- [ ] Validate false-positive rate and battery consumption
-- [ ] Formalize B2B pricing via pilot data (current figures are illustrative, not forecasts)
-
-**Phase 2 — wearable integration:** pulse/HRV and other biometric signals via
-a paired wearable (smartwatch, fitness band, or third-party device), adding
-higher-fidelity distress detection on top of the phone-only baseline.
-
-## 8. Getting Started
+## 6. Getting Started
 
 ```bash
-# clone and install — fill in once the stack is finalized
-git clone <repo-url>
-cd ophelia
+# clone the repository
+git clone https://github.com/Mapaseka-Moloi/Ophelia.git
+cd Ophelia
+
+# install dependencies
+npm install
+
+# run locally (any static server works)
+npx serve .
 ```
 
-*(Add setup/run instructions here once implementation begins.)*
+Then open the local address shown in the terminal. You can also open `index.html` directly in a browser.
+
+**Try it quickly:** on the landing screen, click **Demo as Amahle** to load a sample learner.
+
+## 7. Project Structure
+
+```
+.
+├── index.html          # the app: screens, styles and logic
+├── package.json        # dependencies
+├── package-lock.json
+├── DOCUMENTATION.md    # extended documentation
+└── README.md
+```
+
+## 8. Roadmap
+
+- [ ] Replace placeholder guidance with live, sourced bursary and opportunity data
+- [ ] Real mentor sign-up and matching
+- [ ] Offline-first support so guidance still works without a connection
+- [ ] User accounts and saved pathways
+- [ ] Pilot with a school or NPO partner
+- [ ] Validate recommendations with learners and counsellors
+
+*(Edit this list to match what is actually built and what is next.)*
 
 ## 9. Further Reading
 
-See [`DOCUMENTATION.md`](./DOCUMENTATION.md) for the full business case,
-market sizing, edge AI architecture, and impact-measurement framework.
+See [`DOCUMENTATION.md`](DOCUMENTATION.md) for extended documentation. Note that it may still describe the original safety concept and may need updating.
+
+## 10. Author
+
+Built by Mapaseka Moloi ([@Mapaseka-Moloi](https://github.com/Mapaseka-Moloi)) as part of a hackathon team.
