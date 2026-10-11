@@ -59,7 +59,7 @@ GirlMentor is a web app that guides a learner from "where am I now?" to "what sh
 
 - **Front end:** HTML, CSS and JavaScript in a single page (`index.html`), no build step
 - **Fonts:** Inter and Playfair Display (Google Fonts)
-- **AI / ML:** TensorFlow.js (`@tensorflow/tfjs`) and the speech-commands model (`@tensorflow-models/speech-commands`) are declared dependencies. **[Describe what they are used for in the app, or remove them from `package.json` if they are no longer used.]**
+- **AI / ML:** rule-based local pathway engine + simulated AI-coach responses in `index.html` (offline fallback). Production target: FastAPI + Gemini 2.5 Flash behind a secure backend. No ML dependencies required for the demo.
 
 ## 6. Getting Started
 

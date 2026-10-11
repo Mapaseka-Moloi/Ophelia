@@ -1,5 +1,7 @@
 # Ophelia — Business Case & Technical Documentation
 
+> Note: this file describes the original Ophelia offline-safety concept. The current prototype in `index.html` is GirlMentor (education/life-path navigator, see `README.md`). Kept for reference; needs rewrite to match GirlMentor if used for judging.
+
 *Last updated: August 2026.*
 
 ---
