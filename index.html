@@ -1803,6 +1803,273 @@ input[type="checkbox"] {
       if (label) label.textContent = e.target.value + '%';
     }
   });
+
+  // ---- Pathway engine ----
+  const GOAL_REQUIREMENTS = {
+    'Cybersecurity': { subjects: ['Mathematics'], alt: ['Information Technology', 'Computer Applications Technology'], minMark: 60, routes: ['University CS/IT degree', 'TVET ICT diploma + certs', 'Self-taught + Security+ path'] },
+    'Software development': { subjects: ['Mathematics'], alt: ['Information Technology'], minMark: 55, routes: ['University CS degree', 'TVET software diploma', 'Bootcamp + portfolio path'] },
+    'Data science': { subjects: ['Mathematics'], alt: ['Economics', 'Business Studies'], minMark: 65, routes: ['University stats/CS degree', 'TVET + online data certs', 'Self-taught Python + portfolio'] },
+    'Engineering': { subjects: ['Mathematics', 'Physical Sciences'], alt: [], minMark: 65, routes: ['University engineering', 'TVET NATED engineering', 'Artisan/learnership path'] },
+    'Medicine': { subjects: ['Mathematics', 'Physical Sciences', 'Life Sciences'], alt: [], minMark: 75, routes: ['MBChB university path', 'Nursing/allied health path', 'TVET + bridging path'] },
+    'Nursing': { subjects: ['Life Sciences'], alt: ['Mathematics'], minMark: 55, routes: ['University nursing', 'TVET nursing college', 'Care-worker + bridging'] },
+    'Healthcare': { subjects: ['Life Sciences'], alt: [], minMark: 55, routes: ['University health sciences', 'TVET health programs', 'Community health worker path'] },
+    'Law': { subjects: [], alt: [], minMark: 60, routes: ['University LLB', 'Paralegal diploma + LLB', 'TVET + access path'] },
+    'Business': { subjects: ['Business Studies', 'Economics', 'Accounting'], alt: ['Mathematics'], minMark: 50, routes: ['University BCom', 'TVET business diploma', 'Entrepreneurship path'] },
+    'Entrepreneurship': { subjects: [], alt: ['Business Studies', 'Economics'], minMark: 0, routes: ['Start small + NYDA support', 'TVET business + incubation', 'University business + funding'] },
+    'Education': { subjects: [], alt: [], minMark: 55, routes: ['University BEd', 'TVET ECD + BEd path', 'Tutor/assistant path'] },
+    'Teaching': { subjects: [], alt: [], minMark: 55, routes: ['University BEd', 'PGCE after degree', 'TVET ECD path'] },
+    'Design': { subjects: [], alt: [], minMark: 0, routes: ['University design degree', 'TVET design diploma', 'Portfolio + freelance path'] },
+    'Media and film': { subjects: [], alt: [], minMark: 0, routes: ['University media degree', 'TVET film/media diploma', 'Portfolio + hustle path'] },
+    'Agriculture': { subjects: ['Life Sciences'], alt: ['Economics'], minMark: 50, routes: ['University agric degree', 'TVET agric diploma', 'Agri-enterprise path'] },
+    'Trades and technical work': { subjects: [], alt: ['Mathematics'], minMark: 0, routes: ['TVET NATED/artisan', 'Learnership/apprenticeship', 'Work + upskill path'] },
+    'Research': { subjects: ['Mathematics', 'Physical Sciences'], alt: ['Life Sciences'], minMark: 65, routes: ['University honours/masters', 'Science expo/olympiad path', 'Research assistant path'] },
+    'Olympiads and competitions': { subjects: ['Mathematics'], alt: ['Physical Sciences'], minMark: 60, routes: ['Maths olympiad track', 'Science expo track', 'Coding olympiad track'] }
+  };
+
+  const OPPORTUNITIES = [
+    { title: 'NSFAS Bursary', tag: 'Funding', match: ['financialNeed'], reason: 'Covers university/TVET fees for eligible SA learners.', needsNeed: true },
+    { title: 'FNB / Standard Bank Bursary', tag: 'Bursary', match: ['Business', 'Finance', 'Engineering', 'Technology'], reason: 'Corporate bursaries for high-mark maths learners.' },
+    { title: 'TVET College Application', tag: 'TVET', match: [], reason: 'Affordable, practical alternative when university is out of reach.' },
+    { title: 'GirlCode Bootcamp', tag: 'Tech', match: ['Technology', 'Cybersecurity', 'Software development', 'Data'], reason: 'Matches your tech interests with free/low-cost coding training.' },
+    { title: 'SAWISE / BWASA Mentorship', tag: 'Mentor', match: ['Engineering', 'Research', 'Medicine'], reason: 'Women-in-STEM networks for your goal.' },
+    { title: 'NYDA Grant / Voucher', tag: 'Entrepreneurship', match: ['Entrepreneurship', 'Business'], reason: 'Youth enterprise funding and training.' },
+    { title: 'Sasol / Eskom Expo & Olympiads', tag: 'Competition', match: ['Olympiads', 'Research', 'Problem solving'], reason: 'Competitions strengthen university and bursary applications.' },
+    { title: 'Netflix / NFVF Film Fund', tag: 'Creative', match: ['Media and film', 'Design', 'Creative arts'], reason: 'Creative-industry funding and training.' },
+    { title: 'Funza Lushaka (Teaching)', tag: 'Bursary', match: ['Teaching', 'Education'], reason: 'Full-cost bursary for teaching degrees.' },
+    { title: 'Health & Welfare SETA Learnership', tag: 'Learnership', match: ['Nursing', 'Healthcare', 'Helping people'], reason: 'Paid learnership path into health work.' }
+  ];
+
+  const MENTORS = [
+    { name: 'Lerato M.', role: 'Cybersecurity analyst, Johannesburg', tags: ['Technology', 'Cybersecurity'], initial: 'L' },
+    { name: 'Naledi K.', role: 'Civil engineer, Pretoria', tags: ['Engineering', 'Problem solving'], initial: 'N' },
+    { name: 'Dr. Ayo S.', role: 'Doctor, Durban', tags: ['Medicine', 'Healthcare', 'Helping people'], initial: 'A' },
+    { name: 'Zinhle D.', role: 'Founder, township bakery chain', tags: ['Business', 'Entrepreneurship'], initial: 'Z' },
+    { name: 'Priya N.', role: 'Data scientist, Cape Town', tags: ['Data', 'Technology', 'Research'], initial: 'P' },
+    { name: 'Thandi B.', role: 'Teacher & Funza Lushaka grad', tags: ['Teaching', 'Education', 'Helping people'], initial: 'T' }
+  ];
+
+  function effectiveSubjects() {
+    const subs = {};
+    (AppState.profile.subjects || []).forEach(function (s) { subs[s.name] = s.mark; });
+    if (AppState.whatIf.dropMaths) delete subs['Mathematics'];
+    if (AppState.whatIf.dropScience) delete subs['Physical Sciences'];
+    return subs;
+  }
+
+  function generatePath() {
+    AppState.profile = readProfileFromForm();
+    AppState.journey = null;
+    renderAll();
+    showScreen('dashboard');
+  }
+
+  function toggleWhatIf(key) {
+    AppState.whatIf[key] = !AppState.whatIf[key];
+    syncWhatIfButtons();
+    renderAll();
+  }
+
+  function resetWhatIfChanges() {
+    AppState.whatIf = { dropMaths: false, dropScience: false, noUniversity: false };
+    syncWhatIfButtons();
+    renderAll();
+  }
+
+  function syncWhatIfButtons() {
+    [['dropMaths', 'toggle-dropMaths'], ['dropScience', 'toggle-dropScience'], ['noUniversity', 'toggle-noUniversity']].forEach(function (pair) {
+      const el = document.getElementById(pair[1]);
+      if (el) el.classList.toggle('active', !!AppState.whatIf[pair[0]]);
+    });
+  }
+
+  function goalStatus() {
+    const goal = AppState.profile.goal;
+    const req = GOAL_REQUIREMENTS[goal] || GOAL_REQUIREMENTS['Business'];
+    const subs = effectiveSubjects();
+    const missing = (req.subjects || []).filter(function (s) { return !(s in subs); });
+    const lowMarks = (req.subjects || []).filter(function (s) { return (s in subs) && subs[s] < req.minMark; });
+    const blockedByMoney = AppState.whatIf.noUniversity && AppState.profile.financialNeed;
+    if (missing.length > 0) return { level: 'blocked', label: 'At risk', detail: 'Missing ' + missing.join(', ') + ' for ' + goal + '.' };
+    if (lowMarks.length > 0) return { level: 'warn', label: 'Needs work', detail: lowMarks.join(', ') + ' below ' + req.minMark + '% target.' };
+    if (blockedByMoney) return { level: 'warn', label: 'Alternative needed', detail: 'University route constrained — TVET/learnership paths highlighted.' };
+    return { level: 'ok', label: 'On track', detail: goal + ' requirements currently met.' };
+  }
+
+  function renderAll() {
+    if (!AppState.profile) return;
+    syncWhatIfButtons();
+    updatePlanBadge();
+    renderProfileSummary();
+    renderImpactSummary();
+    renderRouteStatus();
+    renderRoutes();
+    renderPathway();
+    renderOpportunities();
+    renderMentor();
+    renderImpactMetrics();
+    renderPremiumFeatures();
+    const t = document.getElementById('dashboard-title');
+    if (t) t.textContent = (AppState.profile.name || 'Your') + ' — path to ' + AppState.profile.goal;
+  }
+
+  function renderProfileSummary() {
+    const el = document.getElementById('profile-summary');
+    const p = AppState.profile;
+    const subs = (p.subjects || []).map(function (s) { return s.name + ' ' + s.mark + '%'; }).join(', ') || 'none selected';
+    el.innerHTML = '<strong>' + escapeHtml(p.name) + '</strong> · ' + escapeHtml(p.stage) + ' · ' + escapeHtml(p.level || '') +
+      '<br>Goal: <strong>' + escapeHtml(p.goal) + '</strong> · ' + escapeHtml(p.city || '') + ', ' + escapeHtml(p.country) +
+      '<br>Subjects: ' + escapeHtml(subs) + '<br>Interests: ' + escapeHtml((p.interests || []).join(', ') || '—') +
+      (p.financialNeed ? '<br>Financial support needed: yes' : '');
+  }
+
+  function renderImpactSummary() {
+    const el = document.getElementById('impact-summary');
+    const st = goalStatus();
+    const notes = [];
+    if (AppState.whatIf.dropMaths) notes.push('Dropping Mathematics closes CS, engineering and most data routes.');
+    if (AppState.whatIf.dropScience) notes.push('Dropping Physical Sciences closes engineering and some health-science routes.');
+    if (AppState.whatIf.noUniversity) notes.push('Without university funding, TVET, learnerships and NSFAS-TVET paths become primary.');
+    if (notes.length === 0) notes.push('No what-if changes active. Baseline pathway shown.');
+    el.innerHTML = '<strong>Status: ' + escapeHtml(st.label) + '</strong> — ' + escapeHtml(st.detail) +
+      '<ul class="impact-list">' + notes.map(function (n) { return '<li>' + escapeHtml(n) + '</li>'; }).join('') + '</ul>';
+  }
+
+  function renderRouteStatus() {
+    const el = document.getElementById('route-status');
+    const st = goalStatus();
+    const cls = st.level === 'ok' ? 'status-green' : st.level === 'warn' ? 'status-amber' : 'status-pink';
+    el.innerHTML = '<div class="status-row"><div><strong>Goal: ' + escapeHtml(AppState.profile.goal) + '</strong><div class="status-note">' + escapeHtml(st.detail) + '</div></div><span class="status ' + cls + '">' + escapeHtml(st.label) + '</span></div>';
+  }
+
+  function renderRoutes() {
+    const el = document.getElementById('routes');
+    const req = GOAL_REQUIREMENTS[AppState.profile.goal] || GOAL_REQUIREMENTS['Business'];
+    const subs = effectiveSubjects();
+    const hasMaths = 'Mathematics' in subs;
+    const cards = req.routes.map(function (r, i) {
+      const isTVET = /tvet|learnership|artisan|care-worker|bootcamp|self-taught|portfolio|nyda/i.test(r);
+      const recommended = AppState.whatIf.noUniversity ? isTVET : i === 0;
+      const blocked = (!hasMaths && /university (cs|engineering)/i.test(r) && (AppState.whatIf.dropMaths));
+      return '<div class="route-card' + (recommended ? ' recommended' : '') + '"><div class="path-meta"><h4>' + escapeHtml(r) + '</h4>' +
+        '<span class="status ' + (blocked ? 'status-pink' : recommended ? 'status-green' : 'status-gray') + '">' + (blocked ? 'Blocked' : recommended ? 'Recommended' : 'Option') + '</span></div>' +
+        '<p class="route-best">' + escapeHtml(routeAdvice(r)) + '</p></div>';
+    });
+    el.innerHTML = '<div class="routes-grid">' + cards.join('') + '</div>';
+  }
+
+  function routeAdvice(route) {
+    if (/nsfas|university/i.test(route)) return 'Apply via NSFAS before Nov 30; keep marks above entry threshold; data-light past papers work during load shedding.';
+    if (/tvet/i.test(route)) return 'NSFAS funds TVET too; shorter, cheaper, strong artisan/ICT placement.';
+    if (/learnership|apprenticeship/i.test(route)) return 'Paid while you learn; check SETA listings monthly.';
+    if (/portfolio|bootcamp|self-taught/i.test(route)) return 'Build 3 portfolio projects; use offline-first docs and library computers.';
+    return 'Talk to a mentor and track deadlines on a wall calendar.';
+  }
+
+  function renderPathway() {
+    const el = document.getElementById('pathway');
+    const p = AppState.profile;
+    const steps = pathwaySteps(p);
+    el.innerHTML = steps.map(function (s, i) {
+      return '<div class="path-card"><div class="path-meta"><h4>Step ' + (i + 1) + ': ' + escapeHtml(s.title) + '</h4><span class="status ' + s.cls + '">' + escapeHtml(s.badge) + '</span></div>' +
+        '<p class="path-description">' + escapeHtml(s.desc) + '</p><ul class="task-list">' + s.tasks.map(function (t) { return '<li>' + escapeHtml(t) + '</li>'; }).join('') + '</ul></div>';
+    }).join('');
+  }
+
+  function pathwaySteps(p) {
+    const subs = effectiveSubjects();
+    const avg = Object.values(subs).length ? Math.round(Object.values(subs).reduce(function (a, b) { return a + b; }, 0) / Object.values(subs).length) : 0;
+    const steps = [];
+    steps.push({ title: 'Lock subjects for ' + p.goal, badge: avg >= 60 ? 'On track' : 'Focus', cls: avg >= 60 ? 'status-green' : 'status-amber', desc: 'Your subject mix decides which doors stay open.', tasks: subjectTasks(p) });
+    steps.push({ title: 'Study load-shedding-proof', badge: 'Plan', cls: 'status-blue', desc: 'Download notes when you have data; revise offline.', tasks: ['2x 45-min blocks daily, phone on airplane mode', 'Past papers folder on device', 'Library / school computer twice a week'] });
+    if (p.financialNeed) steps.push({ title: 'Secure funding', badge: 'NSFAS', cls: 'status-purple', desc: 'NSFAS + 2 backup bursaries.', tasks: ['Create myNSFAS account before September', 'Certified ID + income proof in a plastic sleeve', 'Apply to 1 TVET as backup — same NSFAS form'] });
+    steps.push({ title: 'Proof + people', badge: 'Next', cls: 'status-pink', desc: 'One project + one mentor beats ten tabs open.', tasks: ['Build one small project in 30 days', 'Message one “Ask a Sister” mentor below', 'Enter one olympiad/expo/competition'] });
+    if (AppState.journey) steps.push({ title: 'Journey: ' + AppState.journey.stage + ' — ' + AppState.journey.level, badge: 'Life graph', cls: 'status-gray', desc: 'Preview of that life stage.', tasks: journeyTasks(AppState.journey) });
+    return steps;
+  }
+
+  function subjectTasks(p) {
+    const subs = effectiveSubjects();
+    const tasks = [];
+    if (!('Mathematics' in subs) && ['Cybersecurity', 'Software development', 'Data science', 'Engineering'].includes(p.goal)) tasks.push('URGENT: Mathematics missing — re-add it or switch to a TVET/bridging route.');
+    Object.entries(subs).forEach(function (kv) { tasks.push('Push ' + kv[0] + ' from ' + kv[1] + '% toward 70%+ with weekly past-paper sets.'); });
+    if (tasks.length === 0) tasks.push('Select at least one core subject for ' + p.goal + '.');
+    return tasks;
+  }
+
+  function journeyTasks(j) {
+    if (j.stage === 'High School') return ['Subject-choice form signed', 'June + prelim revision plan'];
+    if (j.stage === 'University') return ['NSFAS + residence applications', 'Laptop + data plan sorted'];
+    if (j.stage === 'Graduate' && /entrepreneur/i.test(j.level)) return ['NYDA / SEDA registration', 'First 10 paying customers'];
+    return ['CV + LinkedIn + 2 references', 'Apply to 5 roles/learnerships weekly'];
+  }
+
+  function renderOpportunities() {
+    const el = document.getElementById('opportunities');
+    const p = AppState.profile;
+    const scored = OPPORTUNITIES.map(function (o) {
+      let score = 0;
+      if (o.needsNeed && p.financialNeed) score += 2;
+      o.match.forEach(function (m) { if ((p.interests || []).includes(m) || p.goal === m) score += 2; });
+      if (o.tag === 'TVET' && AppState.whatIf.noUniversity) score += 2;
+      return { o: o, score: score };
+    }).sort(function (a, b) { return b.score - a.score; }).slice(0, 6);
+    el.innerHTML = '<div class="opportunities-grid">' + scored.map(function (s) {
+      return '<div class="opportunity-card"><div class="opportunity-top"><strong>' + escapeHtml(s.o.title) + '</strong><span class="status status-blue">' + escapeHtml(s.o.tag) + '</span></div><div class="match-reason">' + escapeHtml(s.o.reason) + '</div></div>';
+    }).join('') + '</div>';
+  }
+
+  function renderMentor() {
+    const el = document.getElementById('mentor');
+    const p = AppState.profile;
+    const ranked = MENTORS.map(function (m) {
+      let score = 0;
+      m.tags.forEach(function (t) { if ((p.interests || []).includes(t) || p.goal === t) score++; });
+      return { m: m, score: score };
+    }).sort(function (a, b) { return b.score - a.score; }).slice(0, 3);
+    el.innerHTML = ranked.map(function (r) {
+      return '<div class="mentor-card"><div class="mentor-header"><div class="avatar">' + escapeHtml(r.m.initial) + '</div><div><h4>' + escapeHtml(r.m.name) + '</h4><div class="status-note">' + escapeHtml(r.m.role) + '</div></div></div><div class="tags">' + r.m.tags.map(function (t) { return '<span class="badge">' + escapeHtml(t) + '</span>'; }).join('') + '</div></div>';
+    }).join('');
+  }
+
+  function renderImpactMetrics() {
+    const el = document.getElementById('impact-metrics');
+    if (!el) return;
+    const nSub = (AppState.profile.subjects || []).length;
+    el.innerHTML =
+      '<div class="metric-card"><div class="metric-value">' + nSub + '</div><div class="metric-label">Subjects tracked</div></div>' +
+      '<div class="metric-card"><div class="metric-value">3</div><div class="metric-label">Routes generated</div></div>' +
+      '<div class="metric-card"><div class="metric-value">6</div><div class="metric-label">Opportunities matched</div></div>' +
+      '<div class="metric-card"><div class="metric-value">3</div><div class="metric-label">Mentors suggested</div></div>';
+  }
+
+  function renderPremiumFeatures() {
+    const el = document.getElementById('premium-features');
+    if (!el) return;
+    const locked = AppState.plan !== 'premium';
+    const feats = ['Custom study plans', 'AI business coaching', 'Unlimited interview prep'];
+    el.innerHTML = feats.map(function (f) {
+      return '<div class="premium-feature-card' + (locked ? ' locked' : '') + '"><strong>' + escapeHtml(f) + '</strong> <span class="lock-badge">' + (locked ? 'Premium' : 'Unlocked') + '</span></div>';
+    }).join('');
+  }
+
+  function askAiCoach() {
+    const q = (document.getElementById('ai-question').value || '').toLowerCase();
+    const box = document.getElementById('ai-answer');
+    box.classList.remove('hidden');
+    let ans = 'Based on your goal (' + AppState.profile.goal + '): keep maths above 60%, apply for NSFAS before Nov 30, and build one small project this month.';
+    if (!q) ans = 'Ask me about NSFAS, subjects, TVET, or study plans.';
+    else if (q.includes('nsfas')) ans = AppState.offline ? '(Offline) NSFAS checklist cached: myNSFAS account, certified ID, income proof. Deadline Nov 30.' : 'NSFAS: create myNSFAS account by Sept, upload certified ID + parent income proof, apply to university AND a TVET backup. Deadline usually Nov 30.';
+    else if (q.includes('maths') || q.includes('math')) ans = 'Maths: 45-min daily sets, redo every wrong sum within 48h, download past papers for load-shedding hours.';
+    else if (q.includes('tvet')) ans = 'TVET is NSFAS-funded and shorter. Good for ICT, engineering, nursing bridging when university cash is tight.';
+    else if (q.includes('study')) ans = 'Study plan: 2 blocks/day, phone off, past papers on device, library twice weekly.';
+    else if (q.includes('interview')) ans = (AppState.plan === 'premium' ? 'Premium interview prep: ' : 'Free tip (Premium unlocks mock interviews): ') + 'STAR answers + 3 questions for them + practice aloud.';
+    if (AppState.offline) ans += ' [Offline fallback — live AI unavailable.]';
+    box.textContent = (AppState.offline ? '' : '(Simulated FastAPI + Gemini 2.5 Flash) ') + ans;
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; });
+  }
   </script>
 </body>
 </html>
