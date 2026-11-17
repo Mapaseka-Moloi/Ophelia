@@ -82,6 +82,26 @@ window.addEventListener('load', () => {
     if (hidden) throw new Error('AI answer still hidden');
   });
 
+  run('not-sure-yet goal gets exploratory routes', () => {
+    const original = evalInPage('JSON.stringify(AppState.profile)');
+    evalInPage('fillProfileToForm(Object.assign({}, AppState.profile, {goal: "Not sure yet"})); generatePath()');
+    const routes = document.getElementById('routes').textContent;
+    if (!/Shortlist 3 goals/.test(routes)) throw new Error('exploratory routes missing');
+    const status = document.getElementById('impact-summary').textContent;
+    if (!/Exploring/.test(status)) throw new Error('expected exploring status, got: ' + status);
+    evalInPage('fillProfileToForm(' + original + '); generatePath()');
+    const restored = evalInPage('AppState.profile.goal');
+    if (restored === 'Not sure yet') throw new Error('original goal not restored');
+  });
+
+  run('impact metrics reflect real matches', () => {
+    const vals = Array.from(document.querySelectorAll('#impact-metrics .metric-value')).map(el => parseInt(el.textContent, 10));
+    if (vals.length !== 4 || vals.some(v => Number.isNaN(v))) throw new Error('metrics not numeric: ' + vals.join(','));
+    const oppsShown = document.querySelectorAll('#opportunities .opportunity-card').length;
+    if (oppsShown > 6) throw new Error('more than 6 opportunities shown');
+    console.log('       metrics: ' + vals.join(' / '));
+  });
+
   run('all screens navigate', () => {
     ['profile', 'dashboard', 'sponsor', 'architecture', 'landing'].forEach(s => {
       evalInPage('showScreen("' + s + '")');
