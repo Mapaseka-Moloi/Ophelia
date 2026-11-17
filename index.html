@@ -1823,7 +1823,8 @@ input[type="checkbox"] {
     'Agriculture': { subjects: ['Life Sciences'], alt: ['Economics'], minMark: 50, routes: ['University agric degree', 'TVET agric diploma', 'Agri-enterprise path'] },
     'Trades and technical work': { subjects: [], alt: ['Mathematics'], minMark: 0, routes: ['TVET NATED/artisan', 'Learnership/apprenticeship', 'Work + upskill path'] },
     'Research': { subjects: ['Mathematics', 'Physical Sciences'], alt: ['Life Sciences'], minMark: 65, routes: ['University honours/masters', 'Science expo/olympiad path', 'Research assistant path'] },
-    'Olympiads and competitions': { subjects: ['Mathematics'], alt: ['Physical Sciences'], minMark: 60, routes: ['Maths olympiad track', 'Science expo track', 'Coding olympiad track'] }
+    'Olympiads and competitions': { subjects: ['Mathematics'], alt: ['Physical Sciences'], minMark: 60, routes: ['Maths olympiad track', 'Science expo track', 'Coding olympiad track'] },
+    'Not sure yet': { subjects: [], alt: [], minMark: 0, routes: ['Shortlist 3 goals with a mentor', 'Aptitude + interest assessment', 'Open days at TVET and universities'] }
   };
 
   const OPPORTUNITIES = [
@@ -1884,6 +1885,7 @@ input[type="checkbox"] {
 
   function goalStatus() {
     const goal = AppState.profile.goal;
+    if (goal === 'Not sure yet') return { level: 'ok', label: 'Exploring', detail: 'No goal locked yet — every route below stays open.' };
     const req = GOAL_REQUIREMENTS[goal] || GOAL_REQUIREMENTS['Business'];
     const subs = effectiveSubjects();
     const missing = (req.subjects || []).filter(function (s) { return !(s in subs); });
@@ -2012,8 +2014,10 @@ input[type="checkbox"] {
       o.match.forEach(function (m) { if ((p.interests || []).includes(m) || p.goal === m) score += 2; });
       if (o.tag === 'TVET' && AppState.whatIf.noUniversity) score += 2;
       return { o: o, score: score };
-    }).sort(function (a, b) { return b.score - a.score; }).slice(0, 6);
-    el.innerHTML = '<div class="opportunities-grid">' + scored.map(function (s) {
+    }).sort(function (a, b) { return b.score - a.score; });
+    AppState.oppMatched = scored.filter(function (s) { return s.score > 0; }).length;
+    const top = scored.slice(0, 6);
+    el.innerHTML = '<div class="opportunities-grid">' + top.map(function (s) {
       return '<div class="opportunity-card"><div class="opportunity-top"><strong>' + escapeHtml(s.o.title) + '</strong><span class="status status-blue">' + escapeHtml(s.o.tag) + '</span></div><div class="match-reason">' + escapeHtml(s.o.reason) + '</div></div>';
     }).join('') + '</div>';
   }
@@ -2026,6 +2030,7 @@ input[type="checkbox"] {
       m.tags.forEach(function (t) { if ((p.interests || []).includes(t) || p.goal === t) score++; });
       return { m: m, score: score };
     }).sort(function (a, b) { return b.score - a.score; }).slice(0, 3);
+    AppState.mentorMatched = ranked.length;
     el.innerHTML = ranked.map(function (r) {
       return '<div class="mentor-card"><div class="mentor-header"><div class="avatar">' + escapeHtml(r.m.initial) + '</div><div><h4>' + escapeHtml(r.m.name) + '</h4><div class="status-note">' + escapeHtml(r.m.role) + '</div></div></div><div class="tags">' + r.m.tags.map(function (t) { return '<span class="badge">' + escapeHtml(t) + '</span>'; }).join('') + '</div></div>';
     }).join('');
@@ -2035,11 +2040,15 @@ input[type="checkbox"] {
     const el = document.getElementById('impact-metrics');
     if (!el) return;
     const nSub = (AppState.profile.subjects || []).length;
+    const req = GOAL_REQUIREMENTS[AppState.profile.goal] || GOAL_REQUIREMENTS['Business'];
+    const nRoutes = req.routes.length;
+    const nOpp = AppState.oppMatched || 0;
+    const nMentors = (AppState.mentorMatched !== undefined) ? AppState.mentorMatched : 3;
     el.innerHTML =
       '<div class="metric-card"><div class="metric-value">' + nSub + '</div><div class="metric-label">Subjects tracked</div></div>' +
-      '<div class="metric-card"><div class="metric-value">3</div><div class="metric-label">Routes generated</div></div>' +
-      '<div class="metric-card"><div class="metric-value">6</div><div class="metric-label">Opportunities matched</div></div>' +
-      '<div class="metric-card"><div class="metric-value">3</div><div class="metric-label">Mentors suggested</div></div>';
+      '<div class="metric-card"><div class="metric-value">' + nRoutes + '</div><div class="metric-label">Routes generated</div></div>' +
+      '<div class="metric-card"><div class="metric-value">' + nOpp + '</div><div class="metric-label">Opportunities matched</div></div>' +
+      '<div class="metric-card"><div class="metric-value">' + nMentors + '</div><div class="metric-label">Mentors suggested</div></div>';
   }
 
   function renderPremiumFeatures() {
