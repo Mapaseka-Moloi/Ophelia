@@ -58,6 +58,8 @@ GirlMentor is a web app that guides a learner from "where am I now?" to "what sh
 ## 5. Tech Stack
 
 - **Front end:** HTML, CSS and JavaScript in a single page (`index.html`), no build step
+- **Server:** `server.js`, a dependency-free Node static server (`npm start`)
+- **Tests:** jsdom smoke test (`npm test`)
 - **Fonts:** Inter and Playfair Display (Google Fonts)
 - **AI / ML:** rule-based local pathway engine + simulated AI-coach responses in `index.html` (offline fallback). Production target: FastAPI + Gemini 2.5 Flash behind a secure backend. No ML dependencies required for the demo.
 
@@ -68,14 +70,18 @@ GirlMentor is a web app that guides a learner from "where am I now?" to "what sh
 git clone https://github.com/Mapaseka-Moloi/Ophelia.git
 cd Ophelia
 
-# install dependencies
+# install dev dependencies (the app itself needs none)
 npm install
 
-# run locally (any static server works)
-npx serve .
+# run locally — zero-dependency static server
+npm start            # → http://localhost:3000
+
+# optional: run the smoke test
+npm test
 ```
 
-Then open the local address shown in the terminal. You can also open `index.html` directly in a browser.
+Any static server works (`npx serve .`), and you can also open `index.html` directly in a
+browser with no server at all.
 
 **Try it quickly:** on the landing screen, click **Demo as Amahle** to load a sample learner.
 
@@ -83,10 +89,13 @@ Then open the local address shown in the terminal. You can also open `index.html
 
 ```
 .
-├── index.html          # the app: screens, styles and logic
-├── package.json        # dependencies
+├── index.html              # the app: screens, styles and logic
+├── server.js               # dependency-free static server used by npm start
+├── scripts/
+│   └── smoke-test.js       # jsdom smoke test used by npm test
+├── package.json            # scripts + jsdom dev dependency
 ├── package-lock.json
-├── DOCUMENTATION.md    # extended documentation
+├── DOCUMENTATION.md        # product & technical documentation
 └── README.md
 ```
 
@@ -94,16 +103,17 @@ Then open the local address shown in the terminal. You can also open `index.html
 
 - [ ] Replace placeholder guidance with live, sourced bursary and opportunity data
 - [ ] Real mentor sign-up and matching
-- [ ] Offline-first support so guidance still works without a connection
+- [x] Offline guidance fallback (manual offline toggle + cached answers)
+- [ ] Service worker for full offline caching of the app shell
 - [ ] User accounts and saved pathways
 - [ ] Pilot with a school or NPO partner
 - [ ] Validate recommendations with learners and counsellors
 
-*(Edit this list to match what is actually built and what is next.)*
-
 ## 9. Further Reading
 
-See [`DOCUMENTATION.md`](DOCUMENTATION.md) for extended documentation. Note that it may still describe the original safety concept and may need updating.
+See [`DOCUMENTATION.md`](DOCUMENTATION.md) for the product and technical documentation:
+screens, the pathway engine and its rules, state, testing, the target production architecture,
+known limitations, and the history of this repository as "Ophelia".
 
 ## 10. Author
 
