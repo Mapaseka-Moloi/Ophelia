@@ -1,0 +1,4 @@
+# Keep .gitignore in LF in the working tree: a trailing \r makes patterns
+# like "node_modules/" stop matching, so the folder shows up as untracked.
+.gitignore text eol=lf
+.gitattributes text eol=lf
