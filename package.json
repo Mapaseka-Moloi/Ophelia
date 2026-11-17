@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "GirlMentor: an AI life-path navigator for girls and young women in South Africa.",
   "scripts": {
-    "start": "npx serve ."
+    "start": "node server.js",
+    "start:serve": "npx serve .",
+    "test": "node scripts/smoke-test.js"
   },
   "keywords": ["education", "career-guidance", "south-africa", "sdg4", "sdg5"],
   "author": "",
@@ -12,5 +14,7 @@
     "url": "https://github.com/Mapaseka-Moloi/Ophelia/issues"
   },
   "homepage": "https://github.com/Mapaseka-Moloi/Ophelia#readme",
-  "devDependencies": {}
+  "devDependencies": {
+    "jsdom": "^31.0.1"
+  }
 }
